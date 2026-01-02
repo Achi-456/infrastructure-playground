@@ -1,0 +1,20 @@
+
+---
+- name: Audit Cgroup Version
+  hosts: k8s_nodes
+  become: yes
+  tasks:
+    - name: Get Cgroup Filesystem status
+      command: stat -fc %T /sys/fs/cgroup/
+      register: cgroup_status
+
+    - name: Display Cgroup Version
+      debug:
+        msg: "The node {{ inventory_hostname }} is running {{ cgroup_status.stdout }}"
+
+    - name: Assert that it is Cgroup v2
+      assert:
+        that:
+          - "'cgroup2fs' in cgroup_status.stdout"
+        fail_msg: "ERROR: This node is not running cgroup v2!"
+        success_msg: "SUCCESS: Cgroup v2 confirmed."
